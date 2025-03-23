@@ -33,10 +33,15 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard-layout";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {  useUser } from "@clerk/nextjs";
 // import { DatePicker } from "@/components/ui/date-picker";
 
 function Dashboard() {
   const [filterPeriod, setFilterPeriod] = useState("today");
+
+  const {user}=useUser();
+  console.log(user?.organizationMemberships[0].role?.split(":")[1],"heyhey")
+
 
   // Mock data for analytics
   const analyticsData = {

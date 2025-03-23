@@ -11,6 +11,10 @@ import {
   Mail,
   Users2,
   Code2,
+  Calendar,
+  FlaskConical,
+  CreditCard,
+  Activity,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -53,8 +57,44 @@ const data = {
       icon: LayoutDashboard,
       isActive: true,
     },
-
-    
+    {
+      title: "Patients",
+      icon: Users,
+      url: "/patients",
+      
+      // color: "text-violet-500",
+    },
+    {
+      title: "Appointments",
+      icon: Calendar,
+      url: "/appointments",
+      // color: "text-pink-700",
+    },
+  
+    {
+      title: "Lab Results",
+      icon: FlaskConical,
+      url: "/lab-results",
+      // color: "text-emerald-500",
+    },
+    {
+      title: "Payments",
+      icon: CreditCard,
+      url: "/payments",
+      // color: "text-blue-500",
+    },
+    {
+      title: "Reports",
+      icon: Activity,
+      url: "/reports",
+      // color: "text-yellow-500",
+    },
+    {
+      title: "Settings",
+      icon: Settings,
+      url: "/settings",
+      // color: "text-gray-500",
+    },
   ],
 
   currentPage: {
