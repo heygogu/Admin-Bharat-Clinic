@@ -8,6 +8,7 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -17,13 +18,7 @@ import {
 import { updateAppointmentStatus } from "@/lib/actions/appointment-actions";
 import { cn } from "@/lib/utils";
 
-const statuses = [
-  { value: "Scheduled", label: "Scheduled" },
-  { value: "In Progress", label: "In Progress" },
-  { value: "Completed", label: "Completed" },
-  { value: "Cancelled", label: "Cancelled" },
-  { value: "No-Show", label: "No-Show" },
-];
+
 
 interface AppointmentStatusDropdownProps {
   appointmentId: string;
@@ -33,11 +28,11 @@ interface AppointmentStatusDropdownProps {
 export function AppointmentStatusDropdown({
   appointmentId,
   currentStatus,
-}: AppointmentStatusDropdownProps) {
+}: any) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(currentStatus);
   const [updating, setUpdating] = useState(false);
-
+  
   const handleSelect = async (value: string) => {
     if (value === status) {
       setOpen(false);
@@ -58,6 +53,14 @@ export function AppointmentStatusDropdown({
     }
   };
 
+  const statusOptions = [
+    "Scheduled",
+    "In Progress",
+    "Completed",
+    "Cancelled",
+    "No-Show",
+  ];
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -73,25 +76,32 @@ export function AppointmentStatusDropdown({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-40 p-0">
-        <Command>
-          <CommandEmpty>No status found.</CommandEmpty>
+        <Command className="w-full">
+          {/* <CommandEmpty>No status found.</CommandEmpty> */}
+          <CommandList>
+
           <CommandGroup>
-            {statuses.map((item) => (
-              <CommandItem
-                key={item.value}
-                value={item.value}
-                onSelect={() => handleSelect(item.value)}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    status === item.value ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {item.label}
-              </CommandItem>
-            ))}
+            {statusOptions?.length > 0 ? (
+              statusOptions.map((statusOption) => (
+                <CommandItem
+                  key={statusOption}
+                  onSelect={() => handleSelect(statusOption)}
+                  value={statusOption}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      status === statusOption ? "opacity-100" : "opacity-0"
+                    )}
+                    />
+                  {statusOption}
+                </CommandItem>
+              ))
+            ) : (
+              <CommandEmpty>No status found.</CommandEmpty>
+            )}
           </CommandGroup>
+            </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

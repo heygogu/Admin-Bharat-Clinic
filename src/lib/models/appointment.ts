@@ -86,7 +86,7 @@ AppointmentSchema.pre("save", function (next) {
 
   // Auto-set the day of the week based on the appointment date
   if (this.date) {
-    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const
     this.day = daysOfWeek[this.date.getDay()]
   }
 
@@ -95,37 +95,74 @@ AppointmentSchema.pre("save", function (next) {
 })
 
 // Helper method to add a payment
-AppointmentSchema.methods.addPayment = function (amount, method = "Cash", notes = "") {
+interface Payment {
+  amount: number;
+  method: string;
+  date: Date;
+  notes: string;
+}
+
+interface IAppointmentMethods {
+  addPayment(amount: number, method?: string, notes?: string): Promise<any>;
+}
+
+AppointmentSchema.methods.addPayment = function(this: mongoose.Document & { 
+  payments: Payment[];
+  paidAmount: number;
+  totalAmount: number;
+  balance: number;
+}, amount: number, method: string = "Cash", notes: string = ""): Promise<any> {
   this.payments.push({
     amount,
     method,
     date: new Date(),
     notes,
-  })
+  });
 
-  this.paidAmount += amount
-  this.balance = this.totalAmount - this.paidAmount
+  this.paidAmount += amount;
+  this.balance = this.totalAmount - this.paidAmount;
 
-  return this.save()
+  return this.save();
 }
 
 // Helper method to add a lab result
-AppointmentSchema.methods.addLabResult = function (type, details, fileUrl = "", notes = "") {
+interface LabResult {
+  type: string;
+  details: string;
+  fileUrl: string;
+  notes: string;
+  date: Date;
+}
+
+interface IAppointmentLabMethods {
+  addLabResult(type: string, details: string, fileUrl?: string, notes?: string): Promise<any>;
+}
+
+AppointmentSchema.methods.addLabResult = function(this: mongoose.Document & {
+  labResults: LabResult[];
+}, type: string, details: string, fileUrl: string = "", notes: string = ""): Promise<any> {
   this.labResults.push({
     type,
     details,
     fileUrl,
     notes,
     date: new Date(),
-  })
+  });
 
-  return this.save()
+  return this.save();
 }
 
 // Helper method to update status
-AppointmentSchema.methods.updateStatus = function (status) {
-  this.status = status
-  return this.save()
+interface IAppointmentStatusMethods {
+  updateStatus(status: "Scheduled" | "In Progress" | "Completed" | "Cancelled" | "No-Show"): Promise<any>;
+}
+
+AppointmentSchema.methods.updateStatus = function(
+  this: mongoose.Document & { status: string },
+  status: "Scheduled" | "In Progress" | "Completed" | "Cancelled" | "No-Show"
+): Promise<any> {
+  this.status = status;
+  return this.save();
 }
 
 

@@ -13,11 +13,12 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import PageContainer from "@/components/page-container"
 import DashboardLayout from "@/components/dashboard-layout"
 
 import { createPrescription } from "@/lib/actions/prescription-actions"
+import { getPatients } from "@/lib/actions/patient-actions"
 
 const medicationSchema = z.object({
   name: z.string().min(2, {
@@ -49,22 +50,21 @@ type PrescriptionFormValues = z.infer<typeof prescriptionFormSchema>
 // Mock function to fetch patients
 const fetchPatients = async () => {
   // In a real app, this would be an API call
-  return [
-    { id: "1", name: "John Doe" },
-    { id: "2", name: "Jane Smith" },
-    { id: "3", name: "Robert Johnson" },
-  ]
+
+  const patients=await getPatients()
+  console.log(patients,"patients")
+
+  return patients?.data?.map((patient:any)=>({
+    id:patient?._id,
+    name:patient?.name +  " | " + patient?.phoneNumber
+  }))
 }
 
  function NewPrescriptionPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const patientId = searchParams.get("patientId")
-  const [patients, setPatients] = useState([
-    { id: "1", name: "John Doe" },
-    { id: "2", name: "Jane Smith" },
-    { id: "3", name: "Robert Johnson" },
-  ])
+  const [patients, setPatients] = useState([ ])
 
   const form = useForm<PrescriptionFormValues>({
     resolver: zodResolver(prescriptionFormSchema),
@@ -79,6 +79,10 @@ const fetchPatients = async () => {
     control: form.control,
     name: "medications",
   })
+
+  useEffect(() => {
+    fetchPatients().then(setPatients)
+  },[])
 
   async function onSubmit(data: PrescriptionFormValues) {
     try {
@@ -137,9 +141,9 @@ const fetchPatients = async () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {patients.map((patient) => (
-                          <SelectItem key={patient.id} value={patient.id}>
-                            {patient.name}
+                        {patients.map((patient:any) => (
+                          <SelectItem key={patient?.id} value={patient?.id}>
+                            {patient?.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

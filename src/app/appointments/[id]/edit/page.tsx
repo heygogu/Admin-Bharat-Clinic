@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Clock, Save } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Loader, Save } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,6 +32,8 @@ import { Separator } from "@/components/ui/separator";
 import PageContainer from "@/components/page-container";
 import DashboardLayout from "@/components/dashboard-layout";
 import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function EditAppointmentPage({
   params,
@@ -116,7 +119,7 @@ export default function EditAppointmentPage({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: parseFloat(value) || 0,
+      [name]: value === '' ? '' : parseFloat(value),
     }));
   };
 
@@ -154,11 +157,9 @@ export default function EditAppointmentPage({
   if (loading) {
     return (
       <DashboardLayout>
-        <PageContainer>
-          <div className="flex justify-center items-center min-h-96">
-            <p>Loading appointment details...</p>
-          </div>
-        </PageContainer>
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <Loader className="w-7 h-7 animate-spin" />
+        </div>
       </DashboardLayout>
     );
   }
@@ -209,28 +210,60 @@ export default function EditAppointmentPage({
 
                 {/* Date and Time */}
                 <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
+                    <div className="space-y-2">
                     <Label htmlFor="date">Appointment Date</Label>
-                    <Input
-                      id="date"
-                      name="date"
-                      type="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`w-full pl-3 text-left font-normal ${!formData.date && "text-muted-foreground"}`}
+                      >
+                        {formData.date ? format(new Date(formData.date), "PPP") : <span>Pick a date</span>}
+                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={formData.date ? new Date(formData.date) : undefined}
+                        onSelect={(date) => setFormData(prev => ({
+                        ...prev,
+                        date: date ? format(date, "yyyy-MM-dd") : ""
+                        }))}
+                        initialFocus
+                      />
+                      </PopoverContent>
+                    </Popover>
+                    </div>
+                    <div className="space-y-2">
                     <Label htmlFor="time">Appointment Time</Label>
-                    <Input
-                      id="time"
-                      name="time"
-                      type="time"
+                    <Select 
+                      onValueChange={(value) => handleSelectChange('time', value)} 
                       value={formData.time}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+                    >
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select a time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="09:00 AM">09:00 AM</SelectItem>
+                      <SelectItem value="09:30 AM">09:30 AM</SelectItem>
+                      <SelectItem value="10:00 AM">10:00 AM</SelectItem>
+                      <SelectItem value="10:30 AM">10:30 AM</SelectItem>
+                      <SelectItem value="11:00 AM">11:00 AM</SelectItem>
+                      <SelectItem value="11:30 AM">11:30 AM</SelectItem>
+                      <SelectItem value="12:00 PM">12:00 PM</SelectItem>
+                      <SelectItem value="12:30 PM">12:30 PM</SelectItem>
+                      <SelectItem value="01:00 PM">01:00 PM</SelectItem>
+                      <SelectItem value="01:30 PM">01:30 PM</SelectItem>
+                      <SelectItem value="02:00 PM">02:00 PM</SelectItem>
+                      <SelectItem value="02:30 PM">02:30 PM</SelectItem>
+                      <SelectItem value="03:00 PM">03:00 PM</SelectItem>
+                      <SelectItem value="03:30 PM">03:30 PM</SelectItem>
+                      <SelectItem value="04:00 PM">04:00 PM</SelectItem>
+                      <SelectItem value="04:30 PM">04:30 PM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    </div>
                 </div>
 
                 {/* Reason for Visit */}
@@ -274,16 +307,31 @@ export default function EditAppointmentPage({
 
                 {/* Follow-up Date and Handled By */}
                 <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
+                    <div className="space-y-2">
                     <Label htmlFor="followUpDate">Follow-up Date</Label>
-                    <Input
-                      id="followUpDate"
-                      name="followUpDate"
-                      type="date"
-                      value={formData.followUpDate}
-                      onChange={handleChange}
-                    />
-                  </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`w-full pl-3 text-left font-normal ${!formData.followUpDate && "text-muted-foreground"}`}
+                      >
+                        {formData.followUpDate ? format(new Date(formData.followUpDate), "PPP") : <span>Pick a date</span>}
+                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={formData.followUpDate ? new Date(formData.followUpDate) : undefined}
+                        onSelect={(date) => setFormData(prev => ({
+                        ...prev,
+                        followUpDate: date ? format(date, "yyyy-MM-dd") : ""
+                        }))}
+                        initialFocus
+                      />
+                      </PopoverContent>
+                    </Popover>
+                    </div>
                   <div className="space-y-2">
                     <Label htmlFor="handledBy">Handled By</Label>
                     <Input
@@ -306,7 +354,7 @@ export default function EditAppointmentPage({
                     type="number"
                     value={formData.totalAmount}
                     onChange={handleNumberChange}
-                    min="0"
+                    min={0}
                     step="0.01"
                   />
                 </div>

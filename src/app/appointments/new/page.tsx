@@ -20,7 +20,9 @@ import { useEffect, useState } from "react"
 import PageContainer from "@/components/page-container"
 import DashboardLayout from "@/components/dashboard-layout"
 import { createAppointment } from "@/lib/actions/appointment-actions"
-import { getPatients } from "@/lib/actions/patient-actions"
+import { getPatientByNameOrPhone, getPatients } from "@/lib/actions/patient-actions"
+import { SearchableSelect } from "@/components/SearchableSelect"
+import { Label } from "@radix-ui/react-dropdown-menu"
 
 const appointmentFormSchema = z.object({
   patientId: z.string().min(1, {
@@ -40,20 +42,7 @@ const appointmentFormSchema = z.object({
 
 type AppointmentFormValues = z.infer<typeof appointmentFormSchema>
 
-// address: "Nigana Khurd , Block-Tosham";
-// age: 45;
-// createdAt: "2025-03-23T14:33:03.273Z";
-// gender: "F";
-// medicalHistory: "";
-// name: "Manju Verma";
-// phoneNumber: "+918607122117";
-// prescriptions: [];
-// updatedAt: "2025-03-23T14:33:03.277Z";
-// waitingStatus: {
-//   isWaiting: false;
-// }
-// __v: 0;
-// _id: "67e01b9f5efb772175d7d4c9";
+
 
 interface Patient {
   _id: string
@@ -68,8 +57,8 @@ const fetchPatients = async () => {
   console.log(patients,"patients")
 
   return patients?.data?.map((patient:Patient)=>({
-    id:patient?._id,
-    name:patient?.name +  " | " + patient?.phoneNumber
+    value:patient?._id,
+    label:patient?.name +  " | " + patient?.phoneNumber
   }))
 }
 
@@ -120,35 +109,43 @@ function NewAppointmentPage() {
       })
     }
   }
+  const searchPatients = async (query: string) => {
+      const results =await getPatientByNameOrPhone(query)
+      return results?.data?.map((patient:Patient)=>({
+        value:patient?._id,
+        label:patient?.name +  " | " + patient?.phoneNumber
+      }))
+  }
 
   return (
     <PageContainer>
+      <div className="flex flex-col gap-5">
+        <div className="flex items-center gap-2">
+          <Link href={patientId ? `/patients/${patientId}` : "/appointments"}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold tracking-tight">New Appointment</h1>
+        </div>
 
-    <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-2">
-        <Link href={patientId ? `/patients/${patientId}` : "/appointments"}>
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold tracking-tight">New Appointment</h1>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Appointment Information</CardTitle>
-          <CardDescription>Schedule a new appointment for the patient.</CardDescription>
-        </CardHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="patientId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Patient</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!patientId}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Appointment Information</CardTitle>
+            <CardDescription>
+              Schedule a new appointment for the patient.
+            </CardDescription>
+          </CardHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="patientId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Patient</FormLabel>
+                      {/* <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!patientId}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a patient" />
@@ -165,129 +162,157 @@ function NewAppointmentPage() {
                           </SelectItem>
                         ))}
                       </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                            >
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                              <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                    </Select> */}
+                      <SearchableSelect
+                        value={field.value}
+                        onChange={field.onChange}
+                        onSearch={searchPatients}
+                        items={patients}
+                        placeholder="Select a patient"
+                        disabled={!!patientId}
+                        required
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={`w-full pl-3 text-left font-normal ${
+                                  !field.value && "text-muted-foreground"
+                                }`}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) => date < new Date()}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Time</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a time" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="09:00 AM">09:00 AM</SelectItem>
+                            <SelectItem value="09:30 AM">09:30 AM</SelectItem>
+                            <SelectItem value="10:00 AM">10:00 AM</SelectItem>
+                            <SelectItem value="10:30 AM">10:30 AM</SelectItem>
+                            <SelectItem value="11:00 AM">11:00 AM</SelectItem>
+                            <SelectItem value="11:30 AM">11:30 AM</SelectItem>
+                            <SelectItem value="12:00 PM">12:00 PM</SelectItem>
+                            <SelectItem value="12:30 PM">12:30 PM</SelectItem>
+                            <SelectItem value="01:00 PM">01:00 PM</SelectItem>
+                            <SelectItem value="01:30 PM">01:30 PM</SelectItem>
+                            <SelectItem value="02:00 PM">02:00 PM</SelectItem>
+                            <SelectItem value="02:30 PM">02:30 PM</SelectItem>
+                            <SelectItem value="03:00 PM">03:00 PM</SelectItem>
+                            <SelectItem value="03:30 PM">03:30 PM</SelectItem>
+                            <SelectItem value="04:00 PM">04:00 PM</SelectItem>
+                            <SelectItem value="04:30 PM">04:30 PM</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
-                  name="time"
+                  name="reason"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Time</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a time" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="09:00 AM">09:00 AM</SelectItem>
-                          <SelectItem value="09:30 AM">09:30 AM</SelectItem>
-                          <SelectItem value="10:00 AM">10:00 AM</SelectItem>
-                          <SelectItem value="10:30 AM">10:30 AM</SelectItem>
-                          <SelectItem value="11:00 AM">11:00 AM</SelectItem>
-                          <SelectItem value="11:30 AM">11:30 AM</SelectItem>
-                          <SelectItem value="12:00 PM">12:00 PM</SelectItem>
-                          <SelectItem value="12:30 PM">12:30 PM</SelectItem>
-                          <SelectItem value="01:00 PM">01:00 PM</SelectItem>
-                          <SelectItem value="01:30 PM">01:30 PM</SelectItem>
-                          <SelectItem value="02:00 PM">02:00 PM</SelectItem>
-                          <SelectItem value="02:30 PM">02:30 PM</SelectItem>
-                          <SelectItem value="03:00 PM">03:00 PM</SelectItem>
-                          <SelectItem value="03:30 PM">03:30 PM</SelectItem>
-                          <SelectItem value="04:00 PM">04:00 PM</SelectItem>
-                          <SelectItem value="04:30 PM">04:30 PM</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Reason for Visit</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., Annual checkup, Follow-up, Consultation"
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <FormField
-                control={form.control}
-                name="reason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reason for Visit</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Annual checkup, Follow-up, Consultation" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Enter any additional notes..." className="resize-none" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Include any special instructions or information for the appointment.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Link href={patientId ? `/patients/${patientId}` : "/appointments"}>
-                <Button variant="outline">Cancel</Button>
-              </Link>
-              <Button type="submit">
-                <Save className="mr-2 h-4 w-4" />
-                Schedule Appointment
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
-    </div>
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter any additional notes..."
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Include any special instructions or information for the
+                        appointment.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Link
+                  href={patientId ? `/patients/${patientId}` : "/appointments"}
+                >
+                  <Button variant="outline">Cancel</Button>
+                </Link>
+                <Button type="submit">
+                  <Save className="mr-2 h-4 w-4" />
+                  Schedule Appointment
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
+        </Card>
+      </div>
     </PageContainer>
-  )
+  );
 }
 
 export default function NewAppointment(){

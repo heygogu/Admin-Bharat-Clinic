@@ -31,7 +31,7 @@ const WaitingListSchema = new Schema({
 })
 
 // Helper method to update status
-WaitingListSchema.methods.updateStatus = function (status) {
+WaitingListSchema.methods.updateStatus = function (status:any) {
   this.status = status
 
   if (status === "Called") {

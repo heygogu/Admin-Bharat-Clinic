@@ -174,4 +174,3 @@ export async function deletePrescription(id: string) {
     return { success: false, error: "Failed to delete prescription" }
   }
 }
-

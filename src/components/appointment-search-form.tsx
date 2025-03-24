@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,32 +10,31 @@ export function AppointmentSearchForm({ defaultValue = "" }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState(defaultValue);
 
-  const handleSubmit = (e:FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchQuery) {
-      router.push(`/appointments?q=${encodeURIComponent(searchQuery)}`);
-    } else {
-      router.push("/appointments");
-    }
-  };
+  useEffect(() => {
+    const debounceTimeout = setTimeout(() => {
+      if (searchQuery) {
+        router.push(`/appointments?q=${encodeURIComponent(searchQuery)}`);
+      } else {
+        router.push("/appointments");
+      }
+    }, 300); // 500ms delay
+
+    return () => clearTimeout(debounceTimeout);
+  }, [searchQuery, router]);
 
   const handleClear = () => {
     setSearchQuery("");
-    router.push("/appointments");
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex w-full  items-center space-x-2"
-    >
+    <div className="flex w-full items-center space-x-2">
       <div className="relative w-full">
         <Input
           type="text"
           placeholder="Search appointments..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pr-10 "
+          className="pr-10"
         />
         {searchQuery && (
           <Button
@@ -49,9 +48,9 @@ export function AppointmentSearchForm({ defaultValue = "" }) {
           </Button>
         )}
       </div>
-      <Button type="submit" variant="secondary" size="icon">
+      <Button type="button" variant="secondary" size="icon">
         <Search className="h-4 w-4" />
       </Button>
-    </form>
+    </div>
   );
 }

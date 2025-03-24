@@ -150,7 +150,7 @@ async function AppointmentsPage({
                           <span>₹{appointment.totalAmount}</span>
                           {appointment.balance > 0 && (
                             <span className="text-xs text-destructive">
-                              Due: ₹{appointment.balance}
+                              Due: ₹{appointment.balance?.toFixed(2)}
                             </span>
                           )}
                         </div>

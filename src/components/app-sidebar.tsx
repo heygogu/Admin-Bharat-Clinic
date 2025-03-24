@@ -60,7 +60,7 @@ const data = {
     {
       title: "Patients",
       icon: Users,
-      url: "/patients",
+      url: "/patients/page/1",
       
       // color: "text-violet-500",
     },
@@ -78,9 +78,14 @@ const data = {
       // color: "text-emerald-500",
     },
     {
+      title:"Prescriptions",
+      icon: FileText,
+      url: "/prescriptions",
+    },
+    {
       title: "Payments",
       icon: CreditCard,
-      url: "/payments",
+      url: "/payments/page/1",
       // color: "text-blue-500",
     },
     {

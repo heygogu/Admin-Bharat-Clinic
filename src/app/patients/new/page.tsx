@@ -216,7 +216,7 @@ function NewPatientPage() {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex justify-between mt-4">
               <Link href="/patients">
                 <Button variant="outline">Cancel</Button>
               </Link>

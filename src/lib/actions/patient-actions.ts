@@ -179,3 +179,21 @@ export async function getPatientPrescriptions(patientId: string) {
   }
 }
 
+//get patient by name of phone number
+export async function getPatientByNameOrPhone(search: string) {
+
+  try {
+    await connectDB()
+    const patients = await Patient.find({
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { phoneNumber: { $regex: search, $options: "i" } },
+      ],
+    })
+
+    return { success: true, data: JSON.parse(JSON.stringify(patients)) }
+  } catch (error) {
+    console.error("Error fetching patients by name or phone number:", error)
+    return { success: false, error: "Failed to fetch patients" }
+  }
+}

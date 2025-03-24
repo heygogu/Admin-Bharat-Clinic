@@ -29,7 +29,7 @@ const PaymentSchema = new Schema({
   createdBy: {
     type: String,
   },
-})
+},{timestamps:true})
 
 // Create a standalone model for payments that aren't tied to an appointment
 const PaymentModel = mongoose.models.Payment || mongoose.model("Payment", PaymentSchema)

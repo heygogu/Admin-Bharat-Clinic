@@ -3,11 +3,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-
+import ProjectLogo from "@/assets/images/project_logo.webp";
 import { Toaster } from "@/components/ui/sonner";
 
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import NextTopLoader from "nextjs-toploader";
+
 import { Providers } from "@/providers/ClerkProvider";
 
 const geistSans = Geist({
@@ -23,6 +23,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Bharat Dental Clinic",
   description: "Bharat Dental Clinic, Karnal (Haryana)",
+  icons: {
+    icon: ProjectLogo.src,
+  }
 };
 
 export default function RootLayout({
@@ -35,6 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
+      suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextThemesProvider
@@ -45,7 +49,7 @@ export default function RootLayout({
         >
         <Providers>
 
-            <NextTopLoader color="blue" height={1.5} zIndex={1600} />
+           
             <NuqsAdapter>{children}</NuqsAdapter>
         </Providers>
         

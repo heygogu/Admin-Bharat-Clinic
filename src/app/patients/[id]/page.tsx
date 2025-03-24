@@ -140,7 +140,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
 
             {appointments.length > 0 ? (
               <div className="space-y-4">
-                {appointments.map((appointment) => (
+                {appointments.map((appointment:any) => (
                   <Card key={appointment._id}>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-center">
@@ -201,7 +201,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
                           </div>
                           <div className="text-red-400">
                             <span className="font-medium">Balance: </span>$
-                            {appointment.balance}
+                            {appointment.balance?.toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -231,7 +231,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
 
             {prescriptions.length > 0 ? (
               <div className="space-y-4">
-                {prescriptions.map((prescription) => (
+                {prescriptions.map((prescription:any) => (
                   <Card key={prescription._id}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base font-medium">
@@ -241,7 +241,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {prescription.medications.map((med, index) => (
+                        {prescription.medications.map((med:any , index:any) => (
                           <div key={index} className="p-3 bg-muted rounded-md">
                             <div className="font-medium">
                               {med.name} - {med.dosage}
@@ -284,7 +284,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
 
             {labResults.length > 0 ? (
               <div className="space-y-4">
-                {labResults.map((result) => (
+                {labResults.map((result:any) => (
                   <Card key={result._id}>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-center">

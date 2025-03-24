@@ -92,7 +92,7 @@ export default function PaymentPageClient({
                   Paid Amount
                 </h3>
                 <p className="text-2xl font-bold text-green-600">
-                  ₹{appointment.paidAmount}
+                  ₹{appointment?.paidAmount}
                 </p>
               </div>
 
@@ -101,7 +101,7 @@ export default function PaymentPageClient({
                   Balance
                 </h3>
                 <p className="text-2xl font-bold text-destructive">
-                  ₹{appointment.balance}
+                  ₹{appointment.balance?.toFixed(2)}
                 </p>
               </div>
             </div>

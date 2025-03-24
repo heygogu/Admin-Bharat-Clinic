@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose"
 
 // Patient Schema
 const PatientSchema = new Schema({
+  
   name: {
     type: String,
     required: true,
@@ -58,13 +59,13 @@ PatientSchema.pre("save", function (next) {
 })
 
 // Helper method to add a prescription
-PatientSchema.methods.addPrescription = function (prescription) {
+PatientSchema.methods.addPrescription = function (prescription:any) {
   this.prescriptions.push(prescription)
   return this.save()
 }
 
 // Helper method to update waiting status
-PatientSchema.methods.updateWaitingStatus = function (isWaiting, reason = "") {
+PatientSchema.methods.updateWaitingStatus = function (isWaiting:any, reason = "") {
   this.waitingStatus = {
     isWaiting,
     waitingSince: isWaiting ? new Date() : null,
@@ -75,3 +76,4 @@ PatientSchema.methods.updateWaitingStatus = function (isWaiting, reason = "") {
 
 export default mongoose.models.Patient || mongoose.model("Patient", PatientSchema)
 
+export {PatientSchema}

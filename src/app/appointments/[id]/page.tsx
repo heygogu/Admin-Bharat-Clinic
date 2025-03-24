@@ -53,7 +53,10 @@ function formatDate(dateString:string) {
 }
 
 async function AppointmentDetailPage({ params }: { params: { id: string } }) {
-  const result = await getAppointmentById(params.id);
+
+  const {id}=await params;
+  const result = await getAppointmentById(id);
+  // const result = await getAppointmentById(params.id);
 
   if (!result.success) {
     notFound();
@@ -91,10 +94,10 @@ async function AppointmentDetailPage({ params }: { params: { id: string } }) {
                 Edit
               </Button>
             </Link>
-            <AppointmentDeleteButton
+            {/* <AppointmentDeleteButton
               id={appointment._id}
               serialNumber={appointment.serialNumber}
-            />
+            /> */}
           </div>
         </div>
 
@@ -258,16 +261,16 @@ async function AppointmentDetailPage({ params }: { params: { id: string } }) {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Total</p>
-                      <p className="font-medium">₹{appointment.totalAmount}</p>
+                      <p className="font-medium">₹{appointment?.totalAmount}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Paid</p>
-                      <p className="font-medium text-green-400">₹{appointment.paidAmount}</p>
+                      <p className="font-medium text-green-400">₹{appointment?.paidAmount?.toFixed(2)}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Balance</p>
                       <p className="font-medium text-destructive">
-                        ₹{appointment.balance}
+                        ₹{appointment?.balance?.toFixed(2)}
                       </p>
                     </div>
                   </div>

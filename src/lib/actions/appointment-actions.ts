@@ -219,3 +219,17 @@ export async function deleteAppointment(id: string) {
   }
 }
 
+
+export async function getAppointmentPayments(patientId: string) {
+
+  try
+  {
+    await connectDB()
+    const appointments = await Appointment.find({ patient: patientId }).sort({ date: -1 })
+    return { success: true, data: JSON.parse(JSON.stringify(appointments)) }
+  }
+  catch (error) {
+    console.error("Error fetching patient appointments:", error)
+    return { success: false, error: "Failed to fetch patient appointments" }
+  }
+}
