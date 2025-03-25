@@ -2,6 +2,10 @@ import mongoose, { Schema } from "mongoose"
 
 // Payment Schema
 const PaymentSchema = new Schema({
+  _id: { // Add this field to store the reference
+    type: Schema.Types.ObjectId,
+    ref: "Payment"
+  },
   amount: {
     type: Number,
     required: true,
@@ -17,19 +21,9 @@ const PaymentSchema = new Schema({
   },
   notes: {
     type: String,
-  },
-  appointment: {
-    type: Schema.Types.ObjectId,
-    ref: "Appointment",
-  },
-  patient: {
-    type: Schema.Types.ObjectId,
-    ref: "Patient",
-  },
-  createdBy: {
-    type: String,
-  },
-},{timestamps:true})
+  }
+});
+
 
 // Create a standalone model for payments that aren't tied to an appointment
 const PaymentModel = mongoose.models.Payment || mongoose.model("Payment", PaymentSchema)

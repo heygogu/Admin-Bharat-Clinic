@@ -60,55 +60,7 @@ export async function getLabResultById(id: string) {
   }
 }
 
-// Create a new lab result
-export async function createLabResult(formData: LabResultFormData) {
-  try {
-    // Validate form data
-    const validatedData = labResultSchema.parse(formData)
 
-    await connectDB()
-
-    // Create the lab result
-    const newLabResult = new LabResult({
-      patient: validatedData.patientId,
-      type: validatedData.type,
-      details: validatedData.details,
-      notes: validatedData.notes || "",
-      fileUrl: validatedData.fileUrl || "",
-      appointment: validatedData.appointmentId || null,
-      createdBy: "Lab Technician", // In a real app, this would be the current user
-    })
-
-    await newLabResult.save()
-
-    // If this lab result is associated with an appointment, add it to the appointment
-    if (validatedData.appointmentId) {
-      const appointment = await Appointment.findById(validatedData.appointmentId)
-      if (appointment) {
-        await appointment.addLabResult(
-          validatedData.type,
-          validatedData.details,
-          validatedData.fileUrl || "",
-          validatedData.notes || "",
-        )
-      }
-    }
-
-    revalidatePath("/lab-results")
-    revalidatePath(`/patients/${validatedData.patientId}`)
-    if (validatedData.appointmentId) {
-      revalidatePath(`/appointments/${validatedData.appointmentId}`)
-    }
-
-    return { success: true, data: JSON.parse(JSON.stringify(newLabResult)) }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors }
-    }
-    console.error("Error creating lab result:", error)
-    return { success: false, error: "Failed to create lab result" }
-  }
-}
 
 // Update a lab result
 export async function updateLabResult(id: string, formData: LabResultFormData) {
@@ -175,3 +127,54 @@ export async function deleteLabResult(id: string) {
   }
 }
 
+// 1. Ensure consistent reference pattern in createLabResult
+export async function createLabResult(formData: LabResultFormData) {
+  try {
+    // Validate form data
+    const validatedData = labResultSchema.parse(formData)
+
+    await connectDB()
+
+    // Create the lab result
+    const newLabResult = new LabResult({
+      patient: validatedData.patientId,
+      type: validatedData.type,
+      details: validatedData.details,
+      notes: validatedData.notes || "",
+      fileUrl: validatedData.fileUrl || "",
+      appointment: validatedData.appointmentId || null,
+      createdBy: "Lab Technician", // In a real app, this would be the current user
+    })
+
+    await newLabResult.save()
+
+    // If this lab result is associated with an appointment, add it to the appointment
+    if (validatedData.appointmentId) {
+      const appointment = await Appointment.findById(validatedData.appointmentId)
+      if (appointment) {
+        // IMPORTANT FIX: Include the lab result ID when adding to appointment
+        await appointment.addLabResult(
+          validatedData.type,
+          validatedData.details,
+          validatedData.fileUrl || "",
+          validatedData.notes || "",
+          newLabResult._id // Add this parameter to track the reference
+        )
+      }
+    }
+
+    revalidatePath("/lab-results")
+    revalidatePath(`/patients/${validatedData.patientId}`)
+    if (validatedData.appointmentId) {
+      revalidatePath(`/appointments/${validatedData.appointmentId}`)
+    }
+
+    return { success: true, data: JSON.parse(JSON.stringify(newLabResult)) }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.errors }
+    }
+    console.error("Error creating lab result:", error)
+    return { success: false, error: "Failed to create lab result" }
+  }
+}

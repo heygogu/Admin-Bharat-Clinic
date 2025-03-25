@@ -67,21 +67,21 @@ const data = {
     {
       title: "Appointments",
       icon: Calendar,
-      url: "/appointments",
+      url: "/appointments/page/1",
       // color: "text-pink-700",
     },
   
-    {
-      title: "Lab Results",
-      icon: FlaskConical,
-      url: "/lab-results",
-      // color: "text-emerald-500",
-    },
-    {
-      title:"Prescriptions",
-      icon: FileText,
-      url: "/prescriptions",
-    },
+    // {
+    //   title: "Lab Results",
+    //   icon: FlaskConical,
+    //   url: "/lab-results",
+    //   // color: "text-emerald-500",
+    // },
+    // {
+    //   title:"Prescriptions",
+    //   icon: FileText,
+    //   url: "/prescriptions",
+    // },
     {
       title: "Payments",
       icon: CreditCard,
@@ -94,12 +94,12 @@ const data = {
       url: "/reports",
       // color: "text-yellow-500",
     },
-    {
-      title: "Settings",
-      icon: Settings,
-      url: "/settings",
-      // color: "text-gray-500",
-    },
+    // {
+    //   title: "Settings",
+    //   icon: Settings,
+    //   url: "/settings",
+    //   // color: "text-gray-500",
+    // },
   ],
 
   currentPage: {

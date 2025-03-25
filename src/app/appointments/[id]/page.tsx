@@ -70,7 +70,7 @@ async function AppointmentDetailPage({ params }: { params: { id: string } }) {
         {/* Header with navigation and actions */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
-            <Link href="/appointments">
+            <Link href="/appointments/page/1">
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-4 w-4" />
               </Button>

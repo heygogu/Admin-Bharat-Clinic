@@ -23,20 +23,7 @@ const PatientSchema = new Schema({
   medicalHistory: {
     type: String,
   },
-  prescriptions: [
-    {
-      date: { type: Date, default: Date.now },
-      medications: [
-        {
-          name: { type: String, required: true },
-          dosage: { type: String, required: true },
-          frequency: { type: String, required: true },
-          duration: { type: String, required: true },
-        },
-      ],
-      notes: { type: String },
-    },
-  ],
+
   waitingStatus: {
     isWaiting: { type: Boolean, default: false },
     waitingSince: { type: Date },
@@ -58,11 +45,7 @@ PatientSchema.pre("save", function (next) {
   next()
 })
 
-// Helper method to add a prescription
-PatientSchema.methods.addPrescription = function (prescription:any) {
-  this.prescriptions.push(prescription)
-  return this.save()
-}
+
 
 // Helper method to update waiting status
 PatientSchema.methods.updateWaitingStatus = function (isWaiting:any, reason = "") {

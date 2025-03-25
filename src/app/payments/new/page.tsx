@@ -346,7 +346,7 @@ const fetchPatients = async () => {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex justify-between mt-4">
               <Link
                 href={
                   patientId

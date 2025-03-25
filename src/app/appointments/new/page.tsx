@@ -99,7 +99,7 @@ function NewAppointmentPage() {
       if (patientId) {
         router.push(`/patients/${patientId}`)
       } else {
-        router.push("/appointments")
+        router.push("/appointments/page/1")
       }
     } catch (error) {
       toast.error("Error",{
@@ -121,7 +121,7 @@ function NewAppointmentPage() {
     <PageContainer>
       <div className="flex flex-col gap-5">
         <div className="flex items-center gap-2">
-          <Link href={patientId ? `/patients/${patientId}` : "/appointments"}>
+          <Link href={patientId ? `/patients/${patientId}` : "/appointments/page/1"}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -298,7 +298,7 @@ function NewAppointmentPage() {
               </CardContent>
               <CardFooter className="flex justify-between">
                 <Link
-                  href={patientId ? `/patients/${patientId}` : "/appointments"}
+                  href={patientId ? `/patients/${patientId}` : "/appointments/page/1"}
                 >
                   <Button variant="outline">Cancel</Button>
                 </Link>

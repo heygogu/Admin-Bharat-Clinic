@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Calendar, FileEdit, FilePlus, FlaskRoundIcon as Flask, User } from "lucide-react"
+import { ArrowLeft, Calendar, FileEdit, FilePlus, FlaskRoundIcon as Flask, Link2, User } from "lucide-react"
 import Link from "next/link"
-import { getPatientById, getPatientPrescriptions } from "@/lib/actions/patient-actions"
+import { getPatientById } from "@/lib/actions/patient-actions"
 import { getPatientAppointments } from "@/lib/actions/appointment-actions"
 import { getPatientLabResults } from "@/lib/actions/lab-result-actions"
 import { notFound } from "next/navigation"
 import PageContainer from "@/components/page-container"
 import DashboardLayout from "@/components/dashboard-layout"
+import { getPatientPrescriptions } from "@/lib/actions/prescription-actions"
 
 async function PatientDetailsPage({ params }: { params: { id: string } }) {
 
@@ -31,6 +32,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
   const appointments = appointmentsResult.success ? appointmentsResult.data : []
   const prescriptions = prescriptionsResult.success ? prescriptionsResult.data : []
   const labResults = labResultsResult.success ? labResultsResult.data : []
+  console.log(prescriptions,"prescriptionsdata")
 
   return (
     <PageContainer>
@@ -233,7 +235,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
               <div className="space-y-4">
                 {prescriptions.map((prescription:any) => (
                   <Card key={prescription._id}>
-                    <CardHeader className="pb-2">
+                    <CardHeader className="">
                       <CardTitle className="text-base font-medium">
                         Prescription -{" "}
                         {new Date(prescription.date).toLocaleDateString()}
@@ -242,13 +244,25 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
                     <CardContent>
                       <div className="space-y-4">
                         {prescription.medications.map((med:any , index:any) => (
-                          <div key={index} className="p-3 bg-muted rounded-md">
+                          <div key={index} className="p-3 bg-muted rounded-md flex justify-between items-center -mt-3">
+                            <div>
+
                             <div className="font-medium">
                               {med.name} - {med.dosage}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               {med.frequency} for {med.duration}
                             </div>
+                            </div>
+                            
+                              <div>
+                               <Link href={`/prescriptions/${prescription?._id}/edit`} passHref>
+                                <Button variant="outline" size="sm" className="cursor-pointer">
+                                  <FileEdit className="mr-1 h-4 w-4" />
+                                  Edit
+                                </Button>
+                                </Link>
+                              </div>
                           </div>
                         ))}
                         {prescription.notes && (

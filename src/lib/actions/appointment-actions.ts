@@ -140,7 +140,7 @@ export async function getAppointmentById(id: string) {
 
       await newAppointment.save()
 
-      revalidatePath("/appointments")
+      revalidatePath("/appointments", 'page') // This will revalidate all pages under /appointments
       revalidatePath(`/patients/${validatedData.patientId}`)
       return { success: true, data: JSON.parse(JSON.stringify(newAppointment)) }
     } catch (error) {
@@ -165,7 +165,7 @@ export async function updateAppointmentStatus(id: string, status: string) {
     appointment.status = status
     await appointment.save()
 
-    revalidatePath("/appointments")
+    revalidatePath("/appointments", 'page') 
     revalidatePath(`/patients/${appointment.patient}`)
     return { success: true }
   } catch (error) {
@@ -188,7 +188,7 @@ export async function updateAppointmentDetails(id: string, details: any) {
     Object.assign(appointment, details)
     await appointment.save()
 
-    revalidatePath("/appointments")
+    revalidatePath("/appointments", 'page') 
     revalidatePath(`/patients/${appointment.patient}`)
     return { success: true, data: JSON.parse(JSON.stringify(appointment)) }
   } catch (error) {
@@ -210,7 +210,7 @@ export async function deleteAppointment(id: string) {
     const patientId = appointment.patient
     await Appointment.findByIdAndDelete(id)
 
-    revalidatePath("/appointments")
+     revalidatePath("/appointments", 'page') 
     revalidatePath(`/patients/${patientId}`)
     return { success: true }
   } catch (error) {
@@ -231,5 +231,16 @@ export async function getAppointmentPayments(patientId: string) {
   catch (error) {
     console.error("Error fetching patient appointments:", error)
     return { success: false, error: "Failed to fetch patient appointments" }
+  }
+}
+
+export async function getAppointmentByPatientId(patientId: string) {
+  try {
+    await connectDB()
+    const appointments = await Appointment.find({ patient: patientId }).sort({ date: -1 })
+    return { success: true, data: JSON.parse(JSON.stringify(appointments)) }
+  } catch (error) {
+    console.error("Error fetching appointments:", error)
+    return { success: false, error: "Failed to fetch appointments" }
   }
 }

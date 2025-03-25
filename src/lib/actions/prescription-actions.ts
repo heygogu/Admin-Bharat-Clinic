@@ -53,7 +53,7 @@ export async function getPatientPrescriptions(patientId: string) {
 export async function getPrescriptionById(id: string) {
   try {
     await connectDB()
-    const prescription = await Prescription.findById(id).populate("patient", "name")
+    const prescription = await Prescription.findById(id).populate("patient").populate("appointment")
 
     if (!prescription) {
       return { success: false, error: "Prescription not found" }
@@ -66,7 +66,39 @@ export async function getPrescriptionById(id: string) {
   }
 }
 
-// Create a new prescription
+
+
+
+
+// Delete a prescription
+export async function deletePrescription(id: string) {
+  try {
+    await connectDB()
+    const prescription = await Prescription.findById(id)
+
+    if (!prescription) {
+      return { success: false, error: "Prescription not found" }
+    }
+
+    const patientId = prescription.patient
+    const appointmentId = prescription.appointment
+
+    await Prescription.findByIdAndDelete(id)
+
+    revalidatePath("/prescriptions")
+    revalidatePath(`/patients/${patientId}`)
+    if (appointmentId) {
+      revalidatePath(`/appointments/${appointmentId}`)
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting prescription:", error)
+    return { success: false, error: "Failed to delete prescription" }
+  }
+}
+
+
 export async function createPrescription(formData: PrescriptionFormData) {
   try {
     // Validate form data
@@ -85,16 +117,8 @@ export async function createPrescription(formData: PrescriptionFormData) {
 
     await newPrescription.save()
 
-    // Also add the prescription to the patient's record
-    const patient = await Patient.findById(validatedData.patientId)
-    if (patient) {
-      await patient.addPrescription({
-        date: new Date(),
-        medications: validatedData.medications,
-        notes: validatedData.notes || "",
-      })
-    }
-
+    // No longer need to update patient.prescriptions
+    // Just revalidate paths
     revalidatePath("/prescriptions")
     revalidatePath(`/patients/${validatedData.patientId}`)
     if (validatedData.appointmentId) {
@@ -111,13 +135,14 @@ export async function createPrescription(formData: PrescriptionFormData) {
   }
 }
 
-// Update a prescription
+// 4. Fix the updatePrescription action - it's using patient ID instead of prescription ID
 export async function updatePrescription(id: string, formData: PrescriptionFormData) {
   try {
     // Validate form data
     const validatedData = prescriptionSchema.parse(formData)
 
     await connectDB()
+    // IMPORTANT FIX: Use findById instead of findOne({patient:id})
     const prescription = await Prescription.findById(id)
 
     if (!prescription) {
@@ -147,30 +172,21 @@ export async function updatePrescription(id: string, formData: PrescriptionFormD
   }
 }
 
-// Delete a prescription
-export async function deletePrescription(id: string) {
+// 5. Fix the getPrescriptionsByPatientId function
+export async function getPrescriptionsByPatientId(patientId: string) {
   try {
     await connectDB()
-    const prescription = await Prescription.findById(id)
+    // IMPORTANT FIX: Use find instead of findOne to get all prescriptions
+    const prescriptions = await Prescription
+      .find({ patient: patientId })
+      .populate("patient")
+      .populate("appointment")
+      .sort({ date: -1 })
 
-    if (!prescription) {
-      return { success: false, error: "Prescription not found" }
-    }
-
-    const patientId = prescription.patient
-    const appointmentId = prescription.appointment
-
-    await Prescription.findByIdAndDelete(id)
-
-    revalidatePath("/prescriptions")
-    revalidatePath(`/patients/${patientId}`)
-    if (appointmentId) {
-      revalidatePath(`/appointments/${appointmentId}`)
-    }
-
-    return { success: true }
-  } catch (error) {
-    console.error("Error deleting prescription:", error)
-    return { success: false, error: "Failed to delete prescription" }
+    return { success: true, data: JSON.parse(JSON.stringify(prescriptions)) }
+  }
+  catch (error) {
+    console.error("Error fetching prescriptions by patient ID:", error)
+    return { success: false, error: "Failed to fetch prescriptions" }
   }
 }

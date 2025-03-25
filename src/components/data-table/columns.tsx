@@ -163,21 +163,24 @@ export const patientColumns: ColumnDef<any>[] = [
 // Appointment columns
 export const appointmentColumns: ColumnDef<any>[] = [
   {
-    accessorKey: "patientDetails.name",
+    accessorKey: "Appointment ID",
+    header: "Appointment ID",
+    cell: ({ row }) => {
+      const serialNumber = row.original.serialNumber as string;
+      return <span>{serialNumber}</span>;
+    },
+  },
+  {
+    accessorKey: "Patient",
     header: "Patient",
     cell: ({ row }) => {
-      const name = row.getValue("patientDetails.name") as string;
+      const patient = row.original.patientDetails;
       return (
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback>
-              {name
-                ?.split(" ")
-                .map((n) => n[0])
-                .join("") || "P"}
-            </AvatarFallback>
-          </Avatar>
-          <span className="font-medium">{name}</span>
+        <div className="flex flex-col">
+          <span className="font-medium">{patient.name}</span>
+          <span className="text-xs text-muted-foreground">
+            {patient.age} / {patient.gender}
+          </span>
         </div>
       );
     },
@@ -190,19 +193,22 @@ export const appointmentColumns: ColumnDef<any>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Date
+          Date/Time
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
       const date = new Date(row.getValue("date"));
-      return <span>{date.toLocaleDateString()}</span>;
+      return (
+        <div className="flex flex-col">
+          <span>{date.toLocaleDateString()}</span>
+          <span className="text-xs text-muted-foreground">
+            {row.original.time} ({row.original.day})
+          </span>
+        </div>
+      );
     },
-  },
-  {
-    accessorKey: "time",
-    header: "Time",
   },
   {
     accessorKey: "reason",
@@ -217,22 +223,40 @@ export const appointmentColumns: ColumnDef<any>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
+
+      const getStatusBadgeVariant = (status: string) => {
+        switch (status) {
+          case "Scheduled":
+            return "outline";
+          case "In Progress":
+            return "secondary";
+          case "Completed":
+            return "default";
+          case "Cancelled":
+          case "No-Show":
+            return "destructive";
+          default:
+            return "outline";
+        }
+      };
+
+      return <Badge variant={getStatusBadgeVariant(status)}>{status}</Badge>;
+    },
+  },
+  {
+    accessorKey: "totalAmount",
+    header: "Payment",
+    cell: ({ row }) => {
+      const appointment = row.original;
       return (
-        <Badge
-          variant={
-            status === "Completed"
-              ? "default"
-              : status === "Scheduled"
-              ? "default"
-              : status === "In Progress"
-              ? "destructive"
-              : status === "Cancelled"
-              ? "destructive"
-              : "outline"
-          }
-        >
-          {status}
-        </Badge>
+        <div className="flex flex-col">
+          <span>₹{appointment.totalAmount}</span>
+          {appointment.balance > 0 && (
+            <span className="text-xs text-destructive">
+              Due: ₹{appointment.balance?.toFixed(2)}
+            </span>
+          )}
+        </div>
       );
     },
   },

@@ -2,6 +2,10 @@ import mongoose, { Schema } from "mongoose"
 
 // Lab Results Schema
 const LabResultSchema = new Schema({
+  _id: { // Add this field to store the reference
+    type: Schema.Types.ObjectId,
+    ref: "LabResult"
+  },
   type: {
     type: String,
     required: true,
@@ -19,20 +23,9 @@ const LabResultSchema = new Schema({
   },
   notes: {
     type: String,
-  },
-  appointment: {
-    type: Schema.Types.ObjectId,
-    ref: "Appointment",
-  },
-  patient: {
-    type: Schema.Types.ObjectId,
-    ref: "Patient",
-    required: true,
-  },
-  createdBy: {
-    type: String,
-  },
-})
+  }
+});
+
 
 // Create a standalone model for lab results
 const LabResultModel = mongoose.models.LabResult || mongoose.model("LabResult", LabResultSchema)

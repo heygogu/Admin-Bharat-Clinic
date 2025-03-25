@@ -66,54 +66,7 @@ export async function getPaymentById(id: string) {
   }
 }
 
-// Create a new payment
-export async function createPayment(formData: PaymentFormData) {
-  try {
-    // Validate form data
-    const validatedData = paymentSchema.parse(formData)
 
-    await connectDB()
-
-    // Create the payment
-    const newPayment = new Payment({
-      patient: validatedData.patientId,
-      amount: validatedData.amount,
-      method: validatedData.method,
-      notes: validatedData.notes || "",
-      appointment: validatedData.appointmentId || null,
-      date: new Date(),
-      createdBy: "Staff", // In a real app, this would be the current user
-    })
-
-    await newPayment.save()
-
-    // If this payment is associated with an appointment, update the appointment's payment info
-    if (validatedData.appointmentId) {
-      const appointment = await Appointment.findById(validatedData.appointmentId)
-      if (appointment) {
-        await appointment.addPayment(
-          validatedData.amount,
-          validatedData.method,
-          validatedData.notes || ""
-        )
-      }
-    }
-
-    revalidatePath("/payments")
-    revalidatePath(`/patients/${validatedData.patientId}`)
-    if (validatedData.appointmentId) {
-      revalidatePath(`/appointments/${validatedData.appointmentId}`)
-    }
-
-    return { success: true, data: JSON.parse(JSON.stringify(newPayment)) }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors }
-    }
-    console.error("Error creating payment:", error)
-    return { success: false, error: "Failed to create payment" }
-  }
-}
 
 // Update a payment
 export async function updatePayment(id: string, formData: PaymentFormData) {
@@ -326,3 +279,53 @@ export async function getRecentPayments() {
   }
 }
 
+// 1. Update the createPayment action to ensure proper references
+export async function createPayment(formData: PaymentFormData) {
+  try {
+    // Validate form data
+    const validatedData = paymentSchema.parse(formData)
+
+    await connectDB()
+
+    // Create the payment
+    const newPayment = new Payment({
+      patient: validatedData.patientId,
+      amount: validatedData.amount,
+      method: validatedData.method,
+      notes: validatedData.notes || "",
+      appointment: validatedData.appointmentId || null,
+      date: new Date(),
+      createdBy: "Staff", // In a real app, this would be the current user
+    })
+
+    await newPayment.save()
+
+    // If this payment is associated with an appointment, update the appointment's payment info
+    if (validatedData.appointmentId) {
+      const appointment = await Appointment.findById(validatedData.appointmentId)
+      if (appointment) {
+        // IMPORTANT FIX: Include the payment ID when adding to appointment
+        await appointment.addPayment(
+          validatedData.amount,
+          validatedData.method,
+          validatedData.notes || "",
+          newPayment._id // Add this parameter to track the reference
+        )
+      }
+    }
+
+    revalidatePath("/payments")
+    revalidatePath(`/patients/${validatedData.patientId}`)
+    if (validatedData.appointmentId) {
+      revalidatePath(`/appointments/${validatedData.appointmentId}`)
+    }
+
+    return { success: true, data: JSON.parse(JSON.stringify(newPayment)) }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.errors }
+    }
+    console.error("Error creating payment:", error)
+    return { success: false, error: "Failed to create payment" }
+  }
+}

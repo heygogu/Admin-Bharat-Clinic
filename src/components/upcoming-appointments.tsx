@@ -18,132 +18,106 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock } from "lucide-react";
-import Link from "next/link";
-import { updateAppointmentStatus } from "@/lib/actions/appointment-actions";
-import { toast } from "sonner";
-import { useState } from "react";
 
-interface UpcomingAppointmentsProps {
-  appointments: any[];
-}
+const upcomingAppointments = [
+  {
+    id: "1",
+    patientName: "John Doe",
+    patientId: "1",
+    date: "2023-03-25",
+    time: "09:00 AM",
+    reason: "Follow-up",
+  },
+  {
+    id: "2",
+    patientName: "Jane Smith",
+    patientId: "2",
+    date: "2023-03-25",
+    time: "10:30 AM",
+    reason: "Consultation",
+  },
+  {
+    id: "3",
+    patientName: "Robert Johnson",
+    patientId: "3",
+    date: "2023-03-26",
+    time: "11:15 AM",
+    reason: "Lab Results Review",
+  },
+  {
+    id: "4",
+    patientName: "Emily Davis",
+    patientId: "4",
+    date: "2023-03-26",
+    time: "02:00 PM",
+    reason: "New Patient",
+  },
+  {
+    id: "5",
+    patientName: "Michael Wilson",
+    patientId: "5",
+    date: "2023-03-27",
+    time: "09:45 AM",
+    reason: "Follow-up",
+  },
+];
 
-export function UpcomingAppointments({
-  appointments = [],
-}: UpcomingAppointmentsProps) {
-  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
-
-  const handleCheckIn = async (appointmentId: string) => {
-    setProcessingIds((prev) => new Set(prev).add(appointmentId));
-
-    try {
-      const result = await updateAppointmentStatus(
-        appointmentId,
-        "In Progress"
-      );
-
-      if (result.success) {
-        toast("Appointment updated", {
-          description: "Patient has been checked in.",
-        });
-      } else {
-        toast.error( "Error",{
-          // title:
-          description: result.error || "Failed to check in patient",
-          // variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error checking in patient:", error);
-      toast.error("Error", {
-        description: "Failed to check in patient. Please try again.",
-        // variant: "destructive",
-      });
-    } finally {
-      setProcessingIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(appointmentId);
-        return newSet;
-      });
-    }
-  };
-
+export function UpcomingAppointments() {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Upcoming Appointments</CardTitle>
         <CardDescription>
-          You have {appointments.length} upcoming appointments
+          You have {upcomingAppointments.length} upcoming appointments
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {appointments.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            No upcoming appointments.
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Patient</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Patient</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Time</TableHead>
+              <TableHead>Reason</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {upcomingAppointments.map((appointment) => (
+              <TableRow key={appointment.id}>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {appointment.patientName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    {appointment.patientName}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    {appointment.date}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    {appointment.time}
+                  </div>
+                </TableCell>
+                <TableCell>{appointment.reason}</TableCell>
+                <TableCell className="text-right">
+                  <Button size="sm">Check In</Button>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {appointments.map((appointment) => (
-                <TableRow key={appointment._id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>
-                          {appointment.patientDetails?.name
-                            ?.split(" ")
-                            .map((n: string) => n[0])
-                            .join("") || "P"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <Link
-                        href={`/patients/${appointment.patient}`}
-                        className="hover:underline"
-                      >
-                        {appointment.patientDetails?.name}
-                      </Link>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      {new Date(appointment.date).toLocaleDateString()}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      {appointment.time}
-                    </div>
-                  </TableCell>
-                  <TableCell>{appointment.reason}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      onClick={() => handleCheckIn(appointment._id)}
-                      disabled={
-                        processingIds.has(appointment._id) ||
-                        appointment.status !== "Scheduled"
-                      }
-                    >
-                      {processingIds.has(appointment._id)
-                        ? "Processing..."
-                        : "Check In"}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+            ))}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

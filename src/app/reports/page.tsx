@@ -8,8 +8,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RevenueReport } from "@/components/reports/revenue-report";
 import { PatientReport } from "@/components/reports/patient-report";
-import { AppointmentReport } from "@/components/reports/appointment-report";
-import { DiagnosisReport } from "@/components/reports/diagnosis-report";
+// import { AppointmentReport } from "@/components/reports/appointment-report";
+// import { DiagnosisReport } from "@/components/reports/diagnosis-report";
 import PageContainer from "@/components/page-container";
 import DashboardLayout from "@/components/dashboard-layout";
 
@@ -23,11 +23,11 @@ function ReportsPage() {
       </div>
 
       <Tabs defaultValue="revenue" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="patients">Patients</TabsTrigger>
-          <TabsTrigger value="appointments">Appointments</TabsTrigger>
-          <TabsTrigger value="diagnosis">Diagnosis</TabsTrigger>
+          {/* <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          <TabsTrigger value="diagnosis">Diagnosis</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="revenue" className="space-y-4">
@@ -58,7 +58,7 @@ function ReportsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="appointments" className="space-y-4">
+        {/* <TabsContent value="appointments" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Appointment Analysis</CardTitle>
@@ -84,7 +84,7 @@ function ReportsPage() {
               <DiagnosisReport />
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
     </PageContainer>

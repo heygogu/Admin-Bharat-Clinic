@@ -96,6 +96,7 @@ AppointmentSchema.pre("save", function (next) {
 
 // Helper method to add a payment
 interface Payment {
+  _id?: mongoose.Types.ObjectId;
   amount: number;
   method: string;
   date: Date;
@@ -111,8 +112,9 @@ AppointmentSchema.methods.addPayment = function(this: mongoose.Document & {
   paidAmount: number;
   totalAmount: number;
   balance: number;
-}, amount: number, method: string = "Cash", notes: string = ""): Promise<any> {
+}, amount: number, method: string = "Cash", notes: string = "", paymentId?: mongoose.Types.ObjectId): Promise<any> {
   this.payments.push({
+    _id: paymentId, // Store the reference to the actual payment
     amount,
     method,
     date: new Date(),
@@ -127,6 +129,7 @@ AppointmentSchema.methods.addPayment = function(this: mongoose.Document & {
 
 // Helper method to add a lab result
 interface LabResult {
+  _id?: mongoose.Types.ObjectId;
   type: string;
   details: string;
   fileUrl: string;
@@ -166,5 +169,19 @@ AppointmentSchema.methods.updateStatus = function(
 }
 
 
-export default mongoose.models.Appointment || mongoose.model("Appointment", AppointmentSchema)
 
+AppointmentSchema.methods.addLabResult = function(this: mongoose.Document & {
+  labResults: LabResult[];
+}, type: string, details: string, fileUrl: string = "", notes: string = "", labResultId: string = ""): Promise<any> {
+  this.labResults.push({
+    _id: labResultId ? new mongoose.Types.ObjectId(labResultId) : undefined, // Convert string ID to ObjectId
+    type,
+    details,
+    fileUrl,
+    notes,
+    date: new Date(),
+  });
+  
+  return this.save();
+}
+export default mongoose.models.Appointment || mongoose.model("Appointment", AppointmentSchema)

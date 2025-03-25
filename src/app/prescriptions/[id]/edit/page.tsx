@@ -14,10 +14,11 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState, useEffect } from "react"
-import { getPrescriptionById, updatePrescription } from "@/lib/actions/prescription-actions"
+import { getPrescriptionById, getPrescriptionsByPatientId, updatePrescription } from "@/lib/actions/prescription-actions"
 import PageContainer from "@/components/page-container"
 import DashboardLayout from "@/components/dashboard-layout"
 import { getPatients } from "@/lib/actions/patient-actions"
+import { getAppointmentByPatientId } from "@/lib/actions/appointment-actions"
 
 const medicationSchema = z.object({
   name: z.string().min(2, {
@@ -42,7 +43,7 @@ const prescriptionFormSchema = z.object({
     message: "At least one medication is required.",
   }),
   notes: z.string().optional(),
-  appointmentId: z.string().optional(),
+
 })
 
 type PrescriptionFormValues = z.infer<typeof prescriptionFormSchema>
@@ -64,7 +65,7 @@ function EditPrescription({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [patients, setPatients] = useState<any[]>([])
-  const [appointments, setAppointments] = useState<any[]>([])
+
   const [selectedPatientId, setSelectedPatientId] = useState<string>("")
 
   const form = useForm<PrescriptionFormValues>({
@@ -73,7 +74,7 @@ function EditPrescription({ params }: { params: { id: string } }) {
       patientId: "",
       medications: [{ name: "", dosage: "", frequency: "", duration: "" }],
       notes: "",
-      appointmentId: "",
+     
     },
   })
 
@@ -83,80 +84,69 @@ function EditPrescription({ params }: { params: { id: string } }) {
   })
 
   // Fetch prescription data
-  useEffect(() => {
-    const fetchPrescription = async () => {
-      try {
-        setIsLoading(true)
-        const result = await getPrescriptionById(params.id)
+ useEffect(() => {
+   const fetchPrescription = async () => {
+     try {
+       setIsLoading(true);
+       const result = await getPrescriptionById(params.id);
+       console.log(result, "result");
+       if (result.success && result.data) {
+         const prescription = result.data;
 
-        if (result.success && result.data) {
-          const prescription = result.data
+         // Ensure medications have the correct structure
+         const medicationsToReset = prescription.medications.map((med:any) => ({
+           name: med.name || "",
+           dosage: med.dosage || "",
+           frequency: med.frequency || "",
+           duration: med.duration || "",
+         }));
 
-          form.reset({
-            patientId: prescription.patient._id,
-            medications: prescription.medications,
-            notes: prescription.notes || "",
-            appointmentId: prescription.appointment?._id || "",
-          })
+         form.reset({
+           patientId: prescription.patient?._id || "",
+           medications:
+             medicationsToReset.length > 0
+               ? medicationsToReset
+               : [{ name: "", dosage: "", frequency: "", duration: "" }],
+           notes: prescription.notes || "",
+         });
 
-          setSelectedPatientId(prescription.patient._id)
-        } else {
-          toast.error("Error", {
-         
-            description: result.error || "Failed to load prescription data",
-           
-          })
-          router.push("/prescriptions")
-        }
-      } catch (error) {
-        console.error("Error loading prescription:", error)
-        toast.error("Error", {
-          description: "Failed to load prescription data. Please try again.",
-          // variant: "destructive",
-        })
-        router.push("/prescriptions")
-      } finally {
-        setIsLoading(false)
-      }
-    }
+         setSelectedPatientId(params.id);
+       } else {
+         toast.error("Error", {
+           description: "No prescription data found",
+         });
+         // Optionally handle the case when no prescription is found
+         form.reset({
+           patientId: params.id,
+           medications: [{ name: "", dosage: "", frequency: "", duration: "" }],
+           notes: "",
+         });
+       }
+     } catch (error) {
+       console.error("Error loading prescription:", error);
+       toast.error("Error", {
+         description: "Failed to load prescription data. Please try again.",
+       });
+       router.push("/prescriptions");
+     } finally {
+       setIsLoading(false);
+     }
+   };
 
-    fetchPrescription()
-  }, [params.id, form, router])
-
+   fetchPrescription();
+ }, [params.id, form, router]);
   // Fetch patients
   useEffect(() => {
   fetchPatients().then(setPatients)
   }, [])
 
   // Fetch appointments when patient changes
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      if (!selectedPatientId) {
-        setAppointments([])
-        return
-      }
-
-      try {
-        const response = await fetch(`/api/patients/${selectedPatientId}/appointments`)
-        const result = await response.json()
-
-        if (result.success) {
-          setAppointments(result.data)
-        } else {
-          console.error("Failed to fetch appointments:", result.error)
-        }
-      } catch (error) {
-        console.error("Error fetching appointments:", error)
-      }
-    }
-
-    fetchAppointments()
-  }, [selectedPatientId])
+ 
 
   // Update appointments when patient changes
   const handlePatientChange = (value: string) => {
     form.setValue("patientId", value)
-    form.setValue("appointmentId", "") // Reset appointment when patient changes
+  
     setSelectedPatientId(value)
   }
 
@@ -233,13 +223,13 @@ function EditPrescription({ params }: { params: { id: string } }) {
                     <FormLabel>Patient</FormLabel>
                     <Select onValueChange={handlePatientChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger disabled>
                           <SelectValue placeholder="Select a patient" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {patients.map((patient) => (
-                          <SelectItem key={patient._id} value={patient._id}>
+                          <SelectItem key={patient.id} value={patient.id}>
                             {patient.name}
                           </SelectItem>
                         ))}
@@ -250,32 +240,7 @@ function EditPrescription({ params }: { params: { id: string } }) {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="appointmentId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Appointment (Optional)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPatientId}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an appointment" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">No appointment</SelectItem>
-                        {appointments.map((appointment) => (
-                          <SelectItem key={appointment._id} value={appointment._id}>
-                            {new Date(appointment.date).toLocaleDateString()} - {appointment.reason}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>Link this prescription to a specific appointment.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+           
 
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -375,7 +340,7 @@ function EditPrescription({ params }: { params: { id: string } }) {
                 )}
               />
             </CardContent>
-            <CardFooter>
+            <CardFooter className="mt-4 flex justify-end">
               <Button type="submit" variant="default" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
