@@ -117,7 +117,8 @@ export const patientColumns: ColumnDef<any>[] = [
     },
   },
   {
-    id: "actions",
+    accessorKey:"actions",
+    header: "Actions",
     cell: ({ row }) => {
       const patient = row.original;
 
@@ -261,7 +262,8 @@ export const appointmentColumns: ColumnDef<any>[] = [
     },
   },
   {
-    id: "actions",
+    accessorKey: "actions",
+    header: "Actions",
     cell: ({ row }) => {
       const appointment = row.original;
 
@@ -386,7 +388,8 @@ export const paymentColumns: ColumnDef<any>[] = [
     },
   },
   {
-    id: "actions",
+    accessorKey: "actions",
+    header: "Actions",
     cell: ({ row }) => {
       const payment = row.original;
 
