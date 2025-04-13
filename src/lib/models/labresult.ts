@@ -1,10 +1,16 @@
+// First, modify your model file to force recompilation
 import mongoose, { Schema } from "mongoose"
 
-// Lab Results Schema
+// Lab Results Schema 
 const LabResultSchema = new Schema({
-  _id: { // Add this field to store the reference
+  patient: {
     type: Schema.Types.ObjectId,
-    ref: "LabResult"
+    ref: "Patient",
+    required: true,
+  },
+  appointment: {
+    type: Schema.Types.ObjectId,
+    ref: "Appointment",
   },
   type: {
     type: String,
@@ -23,13 +29,19 @@ const LabResultSchema = new Schema({
   },
   notes: {
     type: String,
+  },
+  createdBy: {
+    type: String,
+    default: "Lab Technician"
   }
 });
 
+// Force delete the model if it exists to ensure a clean registration
+if (mongoose.models.LabResult) {
+  delete mongoose.models.LabResult;
+}
 
 // Create a standalone model for lab results
-const LabResultModel = mongoose.models.LabResult || mongoose.model("LabResult", LabResultSchema)
-
-export { LabResultSchema }
-export default LabResultModel
-
+const LabResultModel = mongoose.model("LabResult", LabResultSchema);
+export {LabResultSchema}
+export default LabResultModel;

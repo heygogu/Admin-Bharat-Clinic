@@ -19,6 +19,10 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUserRole } from "@/context/Provider";
+import React from "react";
+import { useUser } from "@clerk/nextjs";
+import { set } from "mongoose";
 
 export function NavMain({
   items,
@@ -35,12 +39,12 @@ export function NavMain({
   }[];
 }) {
   const pathname = usePathname();
-
+ 
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="font-semibold">MAIN MENU</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
+        {items && items?.map((item) => (
           <Collapsible
             key={item.title}
             asChild

@@ -5,6 +5,7 @@ import connectDB from "@/lib/db"
 import Payment from "@/lib/models/payment"
 import Appointment from "@/lib/models/appointment"
 import { z } from "zod"
+import mongoose from "mongoose"
 
 // Schema for payment creation/update
 const paymentSchema = z.object({
@@ -286,34 +287,36 @@ export async function createPayment(formData: PaymentFormData) {
     const validatedData = paymentSchema.parse(formData)
 
     await connectDB()
-
+    console.log(validatedData,"validatedData")
     // Create the payment
     const newPayment = new Payment({
-      patient: validatedData.patientId,
+      _id: new mongoose.Types.ObjectId(),
+      patient: mongoose.Types.ObjectId.isValid(validatedData.patientId) 
+              ? new mongoose.Types.ObjectId(validatedData.patientId) 
+              : validatedData.patientId,
       amount: validatedData.amount,
       method: validatedData.method,
       notes: validatedData.notes || "",
       appointment: validatedData.appointmentId || null,
       date: new Date(),
-      createdBy: "Staff", // In a real app, this would be the current user
+    
     })
 
     await newPayment.save()
 
     // If this payment is associated with an appointment, update the appointment's payment info
-    if (validatedData.appointmentId) {
-      const appointment = await Appointment.findById(validatedData.appointmentId)
-      if (appointment) {
-        // IMPORTANT FIX: Include the payment ID when adding to appointment
-        await appointment.addPayment(
-          validatedData.amount,
-          validatedData.method,
-          validatedData.notes || "",
-          newPayment._id // Add this parameter to track the reference
-        )
-      }
-    }
-
+   if (validatedData.appointmentId) {
+  const appointment = await Appointment.findById(validatedData.appointmentId)
+  if (appointment) {
+    // Make sure newPayment._id is a valid ObjectId
+    await appointment.addPayment(
+      validatedData.amount,
+      validatedData.method,
+      validatedData.notes || "",
+      newPayment._id // Ensure this is a valid ObjectId
+    )
+  }
+}
     revalidatePath("/payments")
     revalidatePath(`/patients/${validatedData.patientId}`)
     if (validatedData.appointmentId) {

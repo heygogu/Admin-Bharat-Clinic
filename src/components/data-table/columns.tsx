@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import dayjs from "dayjs";
 
 // Patient columns
 export const patientColumns: ColumnDef<any>[] = [
@@ -135,9 +136,9 @@ export const patientColumns: ColumnDef<any>[] = [
             <DropdownMenuItem asChild>
               <Link href={`/patients/${patient._id}`}>View details</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
+            {/* <DropdownMenuItem asChild>
               <Link href={`/patients/${patient._id}/edit`}>Edit patient</Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href={`/appointments/new?patientId=${patient._id}`}>
@@ -203,7 +204,7 @@ export const appointmentColumns: ColumnDef<any>[] = [
       const date = new Date(row.getValue("date"));
       return (
         <div className="flex flex-col">
-          <span>{date.toLocaleDateString()}</span>
+          <span>{dayjs(date).format("DD MMM YYYY")}</span>
           <span className="text-xs text-muted-foreground">
             {row.original.time} ({row.original.day})
           </span>
@@ -339,7 +340,7 @@ export const paymentColumns: ColumnDef<any>[] = [
       const amount = parseFloat(row.getValue("amount"));
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency: "INR",
       }).format(amount);
       return <span className="font-medium">{formatted}</span>;
     },

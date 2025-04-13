@@ -33,6 +33,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
   const prescriptions = prescriptionsResult.success ? prescriptionsResult.data : []
   const labResults = labResultsResult.success ? labResultsResult.data : []
   console.log(prescriptions,"prescriptionsdata")
+  console.log(labResults,"labResultsdata")
 
   return (
     <PageContainer>
@@ -65,10 +66,10 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
           </div>
           <div className="flex gap-2">
             <Link href={`/patients/${id}/edit`}>
-              <Button variant="outline">
+              {/* <Button variant="outline">
                 <FileEdit className="mr-2 h-4 w-4" />
                 Edit Patient
-              </Button>
+              </Button> */}
             </Link>
             <Link href={`/appointments/new?patientId=${id}`}>
               <Button>
@@ -300,7 +301,7 @@ async function PatientDetailsPage({ params }: { params: { id: string } }) {
               <div className="space-y-4">
                 {labResults.map((result:any) => (
                   <Card key={result._id}>
-                    <CardHeader className="pb-2">
+                    <CardHeader className="">
                       <div className="flex justify-between items-center">
                         <CardTitle className="text-base font-medium">
                           {result.type}

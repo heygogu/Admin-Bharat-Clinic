@@ -5,6 +5,9 @@ import connectDB from "@/lib/db"
 import LabResult from "@/lib/models/labresult"
 import Appointment from "@/lib/models/appointment"
 import { z } from "zod"
+import mongoose from "mongoose"
+import appointment from "@/lib/models/appointment"
+import patient from "../models/patient"
 
 // Schema for lab result creation/update
 const labResultSchema = z.object({
@@ -12,7 +15,7 @@ const labResultSchema = z.object({
   type: z.enum(["X-Ray", "Blood Test", "Scan", "Other"], { required_error: "Please select a lab result type." }),
   details: z.string().min(5, { message: "Details must be at least 5 characters." }),
   notes: z.string().optional(),
-  fileUrl: z.string().optional(),
+  fileUrl: z.instanceof(File).optional(),
   appointmentId: z.string().optional(),
 })
 
@@ -79,7 +82,7 @@ export async function updateLabResult(id: string, formData: LabResultFormData) {
     labResult.type = validatedData.type
     labResult.details = validatedData.details
     labResult.notes = validatedData.notes || ""
-    labResult.fileUrl = validatedData.fileUrl || ""
+    // labResult.fileUrl = validatedData.fileUrl || ""
 
     await labResult.save()
 
@@ -128,38 +131,46 @@ export async function deleteLabResult(id: string) {
 }
 
 // 1. Ensure consistent reference pattern in createLabResult
-export async function createLabResult(formData: LabResultFormData) {
+export async function createLabResult(formData: LabResultFormData,labImageURL: string) {
   try {
     // Validate form data
     const validatedData = labResultSchema.parse(formData)
-
+    console.log("Validated data:", validatedData)
+    console.log("Lab image URL:", labImageURL)
     await connectDB()
 
     // Create the lab result
-    const newLabResult = new LabResult({
-      patient: validatedData.patientId,
+    const newLabResult = await LabResult.create({
+      _id: new mongoose.Types.ObjectId(),
+       patient: mongoose.Types.ObjectId.isValid(validatedData.patientId) 
+        ? new mongoose.Types.ObjectId(validatedData.patientId) 
+        : validatedData.patientId,
       type: validatedData.type,
       details: validatedData.details,
       notes: validatedData.notes || "",
-      fileUrl: validatedData.fileUrl || "",
-      appointment: validatedData.appointmentId || null,
-      createdBy: "Lab Technician", // In a real app, this would be the current user
-    })
-
-    await newLabResult.save()
-
+      fileUrl: labImageURL || "",
+      appointment: validatedData.appointmentId
+        ?new mongoose.Types.ObjectId(validatedData.appointmentId)
+        : validatedData.appointmentId,
+      createdBy: "Lab Technician",
+    });
     // If this lab result is associated with an appointment, add it to the appointment
     if (validatedData.appointmentId) {
       const appointment = await Appointment.findById(validatedData.appointmentId)
       if (appointment) {
+        console.log("Lab result to appointment:", appointment._id)
         // IMPORTANT FIX: Include the lab result ID when adding to appointment
-        await appointment.addLabResult(
-          validatedData.type,
-          validatedData.details,
-          validatedData.fileUrl || "",
-          validatedData.notes || "",
-          newLabResult._id // Add this parameter to track the reference
-        )
+        appointment.labResults.push({
+          _id: newLabResult._id,
+          patient: appointment.patient, // Important: Include the patient
+          type: validatedData.type,
+          details: validatedData.details,
+          fileUrl: labImageURL || "",
+          notes: validatedData.notes || "",
+          date: new Date(),
+          createdBy: "Lab Technician"
+        });
+        await appointment.save();
       }
     }
 

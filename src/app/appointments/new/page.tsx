@@ -121,7 +121,9 @@ function NewAppointmentPage() {
     <PageContainer>
       <div className="flex flex-col gap-5">
         <div className="flex items-center gap-2">
-          <Link href={patientId ? `/patients/${patientId}` : "/appointments/page/1"}>
+          <Link
+            href={patientId ? `/patients/${patientId}` : "/appointments/page/1"}
+          >
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -144,7 +146,9 @@ function NewAppointmentPage() {
                   name="patientId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Patient</FormLabel>
+                      <FormLabel>
+                        Patient<span className="text-red-400">*</span>
+                      </FormLabel>
                       {/* <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!patientId}>
                       <FormControl>
                         <SelectTrigger>
@@ -183,7 +187,9 @@ function NewAppointmentPage() {
                     name="date"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Date</FormLabel>
+                        <FormLabel>
+                          Date<span className="text-red-400">*</span>
+                        </FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -207,7 +213,11 @@ function NewAppointmentPage() {
                               mode="single"
                               selected={field.value}
                               onSelect={field.onChange}
-                              disabled={(date) => date < new Date()}
+                              disabled={(date) => {
+                                const today = new Date()
+                                today.setHours(0, 0, 0, 0)
+                                return date < today
+                              }}
                               initialFocus
                             />
                           </PopoverContent>
@@ -222,7 +232,9 @@ function NewAppointmentPage() {
                     name="time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Time</FormLabel>
+                        <FormLabel>
+                          Time<span className="text-red-400">*</span>
+                        </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
@@ -262,7 +274,9 @@ function NewAppointmentPage() {
                   name="reason"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Reason for Visit</FormLabel>
+                      <FormLabel>
+                        Reason for Visit<span className="text-red-400">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g., Annual checkup, Follow-up, Consultation"
@@ -279,7 +293,7 @@ function NewAppointmentPage() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes</FormLabel>
+                      <FormLabel>Notes (Optional)</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Enter any additional notes..."
@@ -296,9 +310,13 @@ function NewAppointmentPage() {
                   )}
                 />
               </CardContent>
-              <CardFooter className="flex justify-between">
+              <CardFooter className="flex justify-between mt-3">
                 <Link
-                  href={patientId ? `/patients/${patientId}` : "/appointments/page/1"}
+                  href={
+                    patientId
+                      ? `/patients/${patientId}`
+                      : "/appointments/page/1"
+                  }
                 >
                   <Button variant="outline">Cancel</Button>
                 </Link>

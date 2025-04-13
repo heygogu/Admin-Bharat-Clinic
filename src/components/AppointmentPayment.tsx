@@ -112,12 +112,12 @@ export default function PaymentPageClient({
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <h3 className="mb-2 text-sm font-medium">Patient</h3>
-                <p>{appointment.patientDetails.name}</p>
+                <p>{appointment?.patientDetails?.name}</p>
               </div>
 
               <div>
                 <h3 className="mb-2 text-sm font-medium">Phone Number</h3>
-                <p>{appointment.patientDetails.phoneNumber}</p>
+                <p>{appointment?.patientDetails?.phoneNumber}</p>
               </div>
             </div>
           </CardContent>
@@ -144,9 +144,9 @@ export default function PaymentPageClient({
             {showForm ? (
               <PaymentForm
                 onSubmit={handleAddPayment}
-                maxAmount={appointment.balance}
-                appointmentId={appointment._id}
-                patientId={appointment.patient}
+                maxAmount={appointment?.balance}
+                appointmentId={appointment?._id}
+                patientId={appointment?.patient}
               />
             ) : appointment.balance === 0 ? (
               <Alert>

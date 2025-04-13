@@ -184,8 +184,25 @@ export async function updateAppointmentDetails(id: string, details: any) {
       return { success: false, error: "Appointment not found" }
     }
 
-    // Update the appointment with the provided details
-    Object.assign(appointment, details)
+    // Extract labResults to handle separately
+    const { labResults, ...otherDetails } = details
+    
+    // Update regular appointment details
+    Object.assign(appointment, otherDetails)
+    
+    // If updating lab results
+    if (labResults) {
+      // Make sure each lab result has the patient ID
+      for (const labResult of labResults) {
+        if (!labResult.patient) {
+          labResult.patient = appointment.patient;
+        }
+      }
+      
+      // Now update the lab results
+      appointment.labResults = labResults;
+    }
+    
     await appointment.save()
 
     revalidatePath("/appointments", 'page') 

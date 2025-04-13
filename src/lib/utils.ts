@@ -45,3 +45,19 @@ export function composeEventHandlers<E>(
     }
   }
 }
+
+/**
+ * Extracts the role name from the org_role string
+ * @param orgRole - The org_role string in format "org:role_name"
+ * @returns The role name part
+ */
+export function extractRoleName(orgRole: string): string {
+  // Check if the orgRole follows the expected format
+  if (orgRole && orgRole.includes(":")) {
+    // Split by ":" and get the second part
+    return orgRole.split(":")[1]
+  }
+
+  // Return the original string if it doesn't match the expected format
+  return orgRole
+}

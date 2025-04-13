@@ -1,12 +1,14 @@
 "use client"
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { DashboardChart } from "./dashboard-chart";
-import { Button } from "./ui/button";
-import { ChevronDown } from "lucide-react";
+
+
 const RevenueChart = () => {
+  
     const [period, setPeriod] = useState("month");
+  
     return (
       <div>
         <Card>

@@ -40,15 +40,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { useUserRole } from "@/context/Provider";
 
 // This is sample data.
 const data = {
-  user: {
-    name: "Manju",
-    email: "business.contentqueries@gmail.com",
-    avatar:
-      "https://media.licdn.com/dms/image/v2/D4D03AQGTLWnjp7ZAZg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1681108382213?e=1747267200&v=beta&t=uJGzWvdykGknAnW4J-TEBwLFVSwPMoHrt-jq0io8424",
-  },
+  // user: {
+  //   name: "Manju",
+  //   email: "business.contentqueries@gmail.com",
+  //   avatar:
+  //     "https://media.licdn.com/dms/image/v2/D4D03AQGTLWnjp7ZAZg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1681108382213?e=1747267200&v=beta&t=uJGzWvdykGknAnW4J-TEBwLFVSwPMoHrt-jq0io8424",
+  // },
 
   navMain: [
     {
@@ -56,21 +57,23 @@ const data = {
       url: "/dashboard",
       icon: LayoutDashboard,
       isActive: true,
+      roles: ["admin", "lab_technician", "receptionist"],
     },
     {
       title: "Patients",
       icon: Users,
       url: "/patients/page/1",
-      
+      roles: ["admin", "lab_technician", "receptionist"],
       // color: "text-violet-500",
     },
     {
       title: "Appointments",
       icon: Calendar,
       url: "/appointments/page/1",
+      roles: ["admin", "lab_technician", "receptionist"],
       // color: "text-pink-700",
     },
-  
+
     // {
     //   title: "Lab Results",
     //   icon: FlaskConical,
@@ -86,12 +89,14 @@ const data = {
       title: "Payments",
       icon: CreditCard,
       url: "/payments/page/1",
+      roles: ["admin", "receptionist"],
       // color: "text-blue-500",
     },
     {
       title: "Reports",
       icon: Activity,
       url: "/reports",
+      roles: ["admin"],
       // color: "text-yellow-500",
     },
     // {
@@ -110,6 +115,12 @@ const data = {
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
+  const { role } = useUserRole();
+  console.log(role, "roleAppSidebar");
+const filteredNavItems = role
+  ? data.navMain.filter((item) => item.roles.includes(role))
+  : data.navMain;
+
   return (
     <SidebarProvider className="">
       <Sidebar collapsible="icon">
@@ -124,7 +135,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           />
         </SidebarHeader>
         <SidebarContent>
-          <NavMain items={data.navMain} />
+          <NavMain items={filteredNavItems} />
         </SidebarContent>
         <SidebarFooter>{/* <NavUser user={data.user} /> */}</SidebarFooter>
         <SidebarRail />
@@ -141,7 +152,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
               <Button
                 onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                className="ml-auto rounded-full"
+                className="ml-auto mt-[2px] rounded-full"
                 variant="outline"
                 size="icon"
               >

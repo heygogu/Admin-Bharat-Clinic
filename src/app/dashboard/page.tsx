@@ -11,14 +11,24 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getTodayAppointments, getUpcomingAppointments } from "@/lib/actions/appointment-actions";
 import RevenueChart from "@/components/RevenueChartDashboard";
+import { useUserRole } from "@/context/Provider";
+import { auth } from "@clerk/nextjs/server";
+import { extractRoleName } from "@/lib/utils";
+
 async function Dashboard() {
+   const {sessionClaims}=await auth()
+   const role = sessionClaims?.org_role
+     ? extractRoleName(sessionClaims.org_role as string)
+     : null;
   // Fetch data for dashboard metrics
-  const [patientsResult, todayAppointmentsResult, upcomingAppointmentsResult] =
+  const [patientsResult, todayAppointmentsResult] =
     await Promise.all([
       getPatients(),
       getTodayAppointments(),
-      getUpcomingAppointments(),
+      // getUpcomingAppointments(),
     ]);
+
+    console.log(todayAppointmentsResult, "todayAppointmentsResult");
 
   const totalPatients = patientsResult.success ? patientsResult.data.length : 0;
   const newPatientsLastMonth = patientsResult.success
@@ -67,81 +77,86 @@ async function Dashboard() {
 
   return (
     <PageContainer>
-
-    <div className="flex flex-col gap-5">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <div className="flex gap-2">
-          <Link href="/patients/new">
-            <Button>New Patient</Button>
-          </Link>
-          <Link href="/appointments/new">
-            <Button variant="outline">New Appointment</Button>
-          </Link>
+      <div className="flex flex-col gap-5">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <div className="flex gap-2">
+            <Link href="/patients/new">
+              <Button>New Patient</Button>
+            </Link>
+            <Link href="/appointments/new">
+              <Button variant="outline">New Appointment</Button>
+            </Link>
+          </div>
         </div>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Patients
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalPatients}</div>
-            <p className="text-xs text-muted-foreground">
-              {newPatientsLastMonth} new this month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Patients</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{newPatientsLastMonth}</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round((newPatientsLastMonth / (totalPatients || 1)) * 100)}%
-              of total patients
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Today's Appointments
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todayAppointments}</div>
-            <p className="text-xs text-muted-foreground">
-              {completedAppointments} completed,{" "}
-              {todayAppointments - completedAppointments} pending
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Today's Revenue
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              From {completedAppointments} completed appointments
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Patients
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalPatients}</div>
+              <p className="text-xs text-muted-foreground">
+                {newPatientsLastMonth} new this month
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                New Patients
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{newPatientsLastMonth}</div>
+              <p className="text-xs text-muted-foreground">
+                {Math.round(
+                  (newPatientsLastMonth / (totalPatients || 1)) * 100
+                )}
+                % of total patients
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Today's Appointments
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{todayAppointments}</div>
+              <p className="text-xs text-muted-foreground">
+                {completedAppointments} completed,{" "}
+                {todayAppointments - completedAppointments} pending
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Today's Revenue
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ₹{totalRevenue.toFixed(2)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                From {completedAppointments} completed appointments
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-      <RevenueChart/>
-{/* 
+        {role === "admin" ? <RevenueChart /> : null}
+        {/* 
       <Tabs defaultValue="waiting" className="space-y-4">
         <TabsList>
           <TabsTrigger value="waiting">Waiting List</TabsTrigger>
@@ -158,7 +173,7 @@ async function Dashboard() {
           <UpcomingAppointments />
         </TabsContent>
       </Tabs> */}
-    </div>
+      </div>
     </PageContainer>
   );
 }

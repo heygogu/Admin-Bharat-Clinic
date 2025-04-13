@@ -65,6 +65,17 @@ export async function createPatient(formData: PatientFormData) {
     const validatedData = patientSchema.parse(formData)
 
     await connectDB()
+    //check if patient already exists using phone number and name
+    const existingPatient = await Patient.findOne({
+      $and: [
+      { phoneNumber: validatedData.phoneNumber },
+      { name: validatedData.name },
+      ],
+    })
+    if (existingPatient) {
+      return { success: false, error: "Patient already exists" }
+    }
+    // Create a new patient
     const newPatient = new Patient(validatedData)
     await newPatient.save()
 

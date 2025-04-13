@@ -85,8 +85,7 @@ const DatePicker: React.FC<{
 
 function ScheduleAppointment() {
 
-    const {user} =useUser();
-    console.log("loggedinuser",user?.publicMetadata?.role);
+    
 
   const [activeTab, setActiveTab] = useState<string>("details");
   const [formData, setFormData] = useState<AppointmentFormData>({

@@ -71,7 +71,7 @@ async function AppointmentsPageCompo({
 
   return (
     <PageContainer>
-      <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 gap-4">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
           <Link href="/appointments/new">

@@ -59,7 +59,7 @@ async function PatientsPage({
   return (
     <PageContainer>
 
-    <div className="flex flex-col gap-5">
+    <div className="grid grid-cols-1 gap-5">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Patients</h1>
         <Link href="/patients/new">

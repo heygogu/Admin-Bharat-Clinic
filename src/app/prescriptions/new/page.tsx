@@ -109,167 +109,211 @@ const fetchPatients = async () => {
 
   return (
     <PageContainer>
+      <div className="flex flex-col gap-5">
+        <div className="flex items-center gap-2">
+          <Link href={patientId ? `/patients/${patientId}` : "/prescriptions"}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold tracking-tight">
+            New Prescription
+          </h1>
+        </div>
 
-    <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-2">
-        <Link href={patientId ? `/patients/${patientId}` : "/prescriptions"}>
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold tracking-tight">New Prescription</h1>
-      </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Prescription Information</CardTitle>
+            <CardDescription>
+              Create a new prescription for the patient.
+            </CardDescription>
+          </CardHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="patientId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Patient<span className="text-red-400">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={!!patientId}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a patient" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {patients.map((patient: any) => (
+                            <SelectItem key={patient?.id} value={patient?.id}>
+                              {patient?.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Prescription Information</CardTitle>
-          <CardDescription>Create a new prescription for the patient.</CardDescription>
-        </CardHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="patientId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Patient</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!patientId}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a patient" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {patients.map((patient:any) => (
-                          <SelectItem key={patient?.id} value={patient?.id}>
-                            {patient?.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <FormLabel className="text-base">
+                      Medications<span className="text-red-400">*</span>
+                    </FormLabel>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        append({
+                          name: "",
+                          dosage: "",
+                          frequency: "",
+                          duration: "",
+                        })
+                      }
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Medication
+                    </Button>
+                  </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <FormLabel className="text-base">Medications</FormLabel>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => append({ name: "", dosage: "", frequency: "", duration: "" })}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Medication
-                  </Button>
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="p-4 border rounded-md mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">Medication {index + 1}</h4>
+                        {fields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => remove(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`medications.${index}.name`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Medication Name
+                                <span className="text-red-400">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g., Amoxicillin"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`medications.${index}.dosage`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Dosage<span className="text-red-400">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., 500mg" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`medications.${index}.frequency`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Frequency<span className="text-red-400">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g., 3 times daily"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`medications.${index}.duration`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Duration<span className="text-red-400">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., 7 days" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <FormMessage>
+                    {form.formState.errors.medications?.message}
+                  </FormMessage>
                 </div>
 
-                {fields.map((field, index) => (
-                  <div key={field.id} className="p-4 border rounded-md mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-medium">Medication {index + 1}</h4>
-                      {fields.length > 1 && (
-                        <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name={`medications.${index}.name`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Medication Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., Amoxicillin" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`medications.${index}.dosage`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Dosage</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., 500mg" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`medications.${index}.frequency`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Frequency</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., 3 times daily" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`medications.${index}.duration`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Duration</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., 7 days" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                ))}
-                <FormMessage>{form.formState.errors.medications?.message}</FormMessage>
-              </div>
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter any additional instructions or notes..."
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>Include any special instructions for the patient.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Link href={patientId ? `/patients/${patientId}` : "/prescriptions"}>
-                <Button variant="outline">Cancel</Button>
-              </Link>
-              <Button type="submit">
-                <Save className="mr-2 h-4 w-4" />
-                Save Prescription
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
-    </div>
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter any additional instructions or notes..."
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Include any special instructions for the patient.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+              <CardFooter className="flex justify-between mt-3">
+                <Link
+                  href={patientId ? `/patients/${patientId}` : "/prescriptions"}
+                >
+                  <Button variant="outline">Cancel</Button>
+                </Link>
+                <Button type="submit">
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Prescription
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
+        </Card>
+      </div>
     </PageContainer>
-  )
+  );
 }
 
 export default function NewPrescription(){

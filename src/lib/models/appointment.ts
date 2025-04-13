@@ -10,7 +10,7 @@ const AppointmentSchema = new Schema({
   patient: {
     type: Schema.Types.ObjectId,
     ref: "Patient",
-    required: true,
+    required: false,
   },
   // For quick access without needing to populate the patient field
   patientDetails: {
@@ -97,6 +97,7 @@ AppointmentSchema.pre("save", function (next) {
 // Helper method to add a payment
 interface Payment {
   _id?: mongoose.Types.ObjectId;
+  patient: mongoose.Types.ObjectId; // Add this line
   amount: number;
   method: string;
   date: Date;
@@ -112,9 +113,11 @@ AppointmentSchema.methods.addPayment = function(this: mongoose.Document & {
   paidAmount: number;
   totalAmount: number;
   balance: number;
+  patient: mongoose.Types.ObjectId;
 }, amount: number, method: string = "Cash", notes: string = "", paymentId?: mongoose.Types.ObjectId): Promise<any> {
   this.payments.push({
-    _id: paymentId, // Store the reference to the actual payment
+    _id: paymentId || undefined, // Use undefined if paymentId is empty
+    patient: this.patient, // Include the patient reference
     amount,
     method,
     date: new Date(),
@@ -130,6 +133,7 @@ AppointmentSchema.methods.addPayment = function(this: mongoose.Document & {
 // Helper method to add a lab result
 interface LabResult {
   _id?: mongoose.Types.ObjectId;
+  patient: mongoose.Types.ObjectId;
   type: string;
   details: string;
   fileUrl: string;
@@ -141,19 +145,19 @@ interface IAppointmentLabMethods {
   addLabResult(type: string, details: string, fileUrl?: string, notes?: string): Promise<any>;
 }
 
-AppointmentSchema.methods.addLabResult = function(this: mongoose.Document & {
-  labResults: LabResult[];
-}, type: string, details: string, fileUrl: string = "", notes: string = ""): Promise<any> {
-  this.labResults.push({
-    type,
-    details,
-    fileUrl,
-    notes,
-    date: new Date(),
-  });
+// AppointmentSchema.methods.addLabResult = function(this: mongoose.Document & {
+//   labResults: LabResult[];
+// }, type: string, details: string, fileUrl: string = "", notes: string = ""): Promise<any> {
+//   this.labResults.push({
+//     type,
+//     details,
+//     fileUrl,
+//     notes,
+//     date: new Date(),
+//   });
 
-  return this.save();
-}
+//   return this.save();
+// }
 
 // Helper method to update status
 interface IAppointmentStatusMethods {
@@ -172,9 +176,11 @@ AppointmentSchema.methods.updateStatus = function(
 
 AppointmentSchema.methods.addLabResult = function(this: mongoose.Document & {
   labResults: LabResult[];
+  patient: mongoose.Types.ObjectId;
 }, type: string, details: string, fileUrl: string = "", notes: string = "", labResultId: string = ""): Promise<any> {
   this.labResults.push({
-    _id: labResultId ? new mongoose.Types.ObjectId(labResultId) : undefined, // Convert string ID to ObjectId
+    _id: labResultId ? new mongoose.Types.ObjectId(labResultId) : undefined,
+    patient: this.patient, // Set patient from the appointment
     type,
     details,
     fileUrl,
@@ -183,5 +189,9 @@ AppointmentSchema.methods.addLabResult = function(this: mongoose.Document & {
   });
   
   return this.save();
+}
+
+if(mongoose.models.Appointment) {
+  delete mongoose.models.Appointment
 }
 export default mongoose.models.Appointment || mongoose.model("Appointment", AppointmentSchema)
